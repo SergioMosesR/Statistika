@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://smkbagimunegeriku.sch.id/wp-content/uploads/2021/12/cropped-Logo-BN-512x512-1.png" type="image/png">
+    <title>Sergio - Statistika</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .form-container {
+            margin-bottom: 30px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+        }
+        input[type="button"] {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        input[type="button"]:hover {
+            background-color: #218838;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+        .results h3 {
+            color: #007bff;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #28a745;
+        }
+        .loading {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .loading span {
+            display: block;
+            font-size: 20px;
+            color: #ffc107;
+        }
+        .loading span:after {
+            content: " ⏳";
+        }
+        .explanation {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+        .code {
+            font-family: monospace;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Perhitungan Statistika: Mean, Modus, dan Median</h1>
+
+    <div class="form-container">
+        <label for="data">Masukkan Data (pisahkan dengan koma):</label>
+        <input type="text" id="data" placeholder="Contoh: 12, 8, 15, 7, 9, 8, 5, 10">
+        <input type="button" value="Hitung" onclick="hitungStatistika()">
+    </div>
+
+    <div id="loading" class="loading" style="display:none;">
+        <span>Sedang menghitung...</span>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        function hitungMean(data) {
+            const jumlahData = data.length;
+            const total = data.reduce((acc, val) => acc + val, 0);
+            return total / jumlahData;
+        }
+
+        function hitungModus(data) {
+            const frekuensi = {};
+            let modus = null;
+            let maxCount = 0;
+
+            data.forEach(value => {
+                frekuensi[value] = (frekuensi[value] || 0) + 1;
+                if (frekuensi[value] > maxCount) {
+                    maxCount = frekuensi[value];
+                    modus = value;
+                }
+            });
+
+            return modus;
+        }
+
+        function hitungMedian(data) {
+            data.sort((a, b) => a - b);
+            const jumlahData = data.length;
+            const tengah = Math.floor(jumlahData / 2);
+
+            if (jumlahData % 2 !== 0) {
+                return data[tengah];
+            } else {
+                return (data[tengah - 1] + data[tengah]) / 2;
+            }
+        }
+
+        function hitungStatistika() {
+            const inputData = document.getElementById('data').value;
+            const data = inputData.split(',').map(val => parseFloat(val.trim()));
+
+            if (data.some(isNaN)) {
+                alert('Semua nilai harus berupa angka yang valid!');
+                return;
+            }
+
+            // Menampilkan loading animation
+            document.getElementById('loading').style.display = 'block';
+
+            // Menunda perhitungan selama 1 detik untuk menunjukkan animasi loading
+            setTimeout(() => {
+                const mean = hitungMean(data);
+                const modus = hitungModus(data);
+                const median = hitungMedian(data);
+
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = `
+                    <div class="results">
+                        <h3>Hasil Perhitungan:</h3>
+                        <p><strong>Mean (Rata-rata):</strong> <span class="highlight">${mean.toFixed(2)}</span></p>
+                        <div class="explanation">
+                            <p><strong>Penjelasan:</strong> Untuk menghitung mean, jumlahkan semua data dan bagi dengan jumlah data.</p>
+                            <p class="code">Mean = (${data.join(' + ')}) / ${data.length} = ${mean.toFixed(2)}</p>
+                        </div>
+                        
+                        <p><strong>Modus (Yang Paling Sering Muncul):</strong> <span class="highlight">${modus}</span></p>
+                        <div class="explanation">
+                            <p><strong>Penjelasan:</strong> Modus adalah angka yang paling sering muncul dalam kumpulan data.</p>
+                            <p class="code">Modus = ${modus} (Karena ${modus} muncul ${data.filter(val => val === modus).length} kali)</p>
+                        </div>
+                        
+                        <p><strong>Median (Nilai Tengah):</strong> <span class="highlight">${median}</span></p>
+                        <div class="explanation">
+                            <p><strong>Penjelasan:</strong> Median adalah nilai yang terletak di tengah setelah data diurutkan.</p>
+                            <p class="code">Median = ${data.join(', ')} (Data yang diurutkan: ${data.sort((a, b) => a - b).join(', ')})</p>
+                            <p class="code">Median = ${median}</p>
+                        </div>
+                    </div>
+                `;
+
+                // Menyembunyikan loading animation setelah perhitungan selesai
+                document.getElementById('loading').style.display = 'none';
+            }, 1000);
+        }
+    </script>
+
+</body>
+</html>
